@@ -24,12 +24,13 @@ on:
 jobs:
   build_and_deploy_preview:
     name: Build & Deploy to Cloudflare Pages
-    runs-on: ubuntu-latest
+    runs-on:
+      ubuntu-latest
 
-    # Set permissions for the GITHUB_TOKEN if needed by any steps
-    # For Cloudflare Pages deployment, typically not needed unless you're doing something else with the token.
-    # permissions:
-    #   contents: read
+      # Add or modify the permissions block here
+    permissions:
+      contents: read # Or 'write' if other steps in this job need to write to the repo
+      pull-requests: write # <-- THIS IS REQUIRED FOR WRITING PR COMMENTS
 
     steps:
       - name: Checkout code
