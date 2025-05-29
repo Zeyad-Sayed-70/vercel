@@ -1,0 +1,87 @@
+name: "[FE] Preview Deployment (Cloudflare Pages)"
+
+on:
+  # Trigger on Pull Requests targeting your main development branches
+  pull_request:
+    # branches:
+    #   - main # Or your default branch(es) like 'develop', 'master'
+    types: [opened, synchronize, reopened]
+
+  # Allow manual triggering from the GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "The PR source branch to redeploy (e.g., feature/my-ui-change)"
+        required: true
+        type: string
+      # You can add your Cloudflare project name as an input if you have multiple
+      # cloudflare_project_name:
+      #   description: 'Cloudflare Pages project name'
+      #   required: true
+      #   type: string
+      #   default: 'your-default-frontend-project-name' # Set a default if you mostly use one
+
+jobs:
+  build_and_deploy_preview:
+    name: Build & Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+
+    # Set permissions for the GITHUB_TOKEN if needed by any steps
+    # For Cloudflare Pages deployment, typically not needed unless you're doing something else with the token.
+    # permissions:
+    #   contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # For workflow_dispatch, checkout the branch specified in the input.
+          # For pull_request events, github.head_ref is the source branch of the PR.
+          # github.ref is a fallback (e.g., refs/heads/branch-name).
+          ref: ${{ github.event.inputs.branch_name || github.head_ref || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x" # Specify your project's Node.js version
+          cache: "npm" # Or 'yarn' if you use Yarn
+
+      - name: Install dependencies
+        run: npm ci # Or 'yarn install --frozen-lockfile' if you use Yarn
+
+      - name: Build project
+        run: npm run build # Or your specific build command (e.g., 'yarn build', 'ng build --prod')
+        env:
+          # Add any build-time environment variables if needed
+          # Example: REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL_PREVIEW }}
+          NODE_ENV: production
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1 # Use the latest version from https://github.com/cloudflare/pages-action
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: "Cloudflare App" # IMPORTANT: Replace with your actual Cloudflare Pages project name
+          # branch: This tells Cloudflare which branch this deployment is for, affecting the preview URL.
+          # For PRs, use the PR's source branch. For manual dispatch, use the input.
+          # github.ref_name gives just the branch name (e.g., "feature/foo")
+          branch: ${{ github.event.pull_request.head.ref || github.event.inputs.branch_name || github.ref_name }}
+          directory: "./build" # IMPORTANT: Replace with your project's build output directory (e.g., 'dist', 'public', 'out')
+          # Optional: Set this to true if you want the Action to fail if the Wrangler CLI fails for any reason
+          # wranglerVersion: '3' # Specify Wrangler version if needed, otherwise it uses a recent one.
+          # workingDirectory: '.' # If your project is in a subdirectory
+
+      # Optional: Add a step to comment on the PR with the preview URL
+      # This requires the `pull-requests: write` permission on the job.
+      - name: Post Preview URL to PR
+        if: github.event_name == 'pull_request' && success() # Only on PRs and if deploy succeeded
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: cloudflare-preview-url # A unique header for the comment to allow updates
+          message: |
+            🚀 **Cloudflare Pages Preview is ready!**
+            Preview URL: [https:// ${{ github.event.pull_request.head.ref }}.${{ env.CLOUDFLARE_PROJECT_NAME }}.pages.dev](https:// ${{ github.event.pull_request.head.ref }}.${{ env.CLOUDFLARE_PROJECT_NAME }}.pages.dev)
+            *(Note: The URL format depends on your Cloudflare Pages settings. Adjust as needed.)*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLOUDFLARE_PROJECT_NAME: "Cloudflare App" # Must match your project name
