@@ -66,7 +66,7 @@ jobs:
           # For PRs, use the PR's source branch. For manual dispatch, use the input.
           # github.ref_name gives just the branch name (e.g., "feature/foo")
           branch: ${{ github.event.pull_request.head.ref || github.event.inputs.branch_name || github.ref_name }}
-          directory: "./build" # IMPORTANT: Replace with your project's build output directory (e.g., 'dist', 'public', 'out')
+          directory: "./dist" # IMPORTANT: Replace with your project's build output directory (e.g., 'dist', 'public', 'out')
           # Optional: Set this to true if you want the Action to fail if the Wrangler CLI fails for any reason
           # wranglerVersion: '3' # Specify Wrangler version if needed, otherwise it uses a recent one.
           # workingDirectory: '.' # If your project is in a subdirectory
@@ -74,7 +74,7 @@ jobs:
       # Optional: Add a step to comment on the PR with the preview URL
       # This requires the `pull-requests: write` permission on the job.
       - name: Post Preview URL to PR
-        if: github.event_name == 'pull_request' && success() # Only on PRs and if deploy succeeded
+        if: github.event_name == 'pull_request' && success() # Only on PRs directory if deploy succeeded
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: cloudflare-preview-url # A unique header for the comment to allow updates
