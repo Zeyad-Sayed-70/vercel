@@ -61,7 +61,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: "Cloudflare App" # IMPORTANT: Replace with your actual Cloudflare Pages project name
+          projectName: "vercel" # IMPORTANT: Replace with your actual Cloudflare Pages project name
           # branch: This tells Cloudflare which branch this deployment is for, affecting the preview URL.
           # For PRs, use the PR's source branch. For manual dispatch, use the input.
           # github.ref_name gives just the branch name (e.g., "feature/foo")
@@ -84,4 +84,4 @@ jobs:
             *(Note: The URL format depends on your Cloudflare Pages settings. Adjust as needed.)*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CLOUDFLARE_PROJECT_NAME: "Cloudflare App" # Must match your project name
+          CLOUDFLARE_PROJECT_NAME: "vercel" # Must match your project name
