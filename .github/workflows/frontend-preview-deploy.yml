@@ -51,7 +51,7 @@ jobs:
         run: npm ci # Or 'yarn install --frozen-lockfile' if you use Yarn
 
       - name: Build project
-        run: npm run build # Or your specific build command (e.g., 'yarn build', 'ng build --prod')
+        run: node ./scripts/create_env_file.cjs && npx vite build --mode cloudflare # Or your specific build command (e.g., 'yarn build', 'ng build --prod')
         env:
           # Add any build-time environment variables if needed
           # Example: REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL_PREVIEW }}
