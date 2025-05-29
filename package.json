@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "prebuild": "powershell -ExecutionPolicy Bypass -File ./scripts/create_env_file.ps1",
+    "prebuild": "node ./scripts/create_env_file.cjs",
     "dev": "vite --mode vercelpreview",
     "build": "tsc -b && vite build --mode vercelpreview",
     "lint": "eslint .",
